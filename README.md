@@ -33,8 +33,6 @@ SimCLR/
 ---
 ## ⚙️ Key Modifications from Original SimCLR
 
-> Based on changes documented in `Summary of the modifications.md`
-
 ### ✅ Dataset Subsetting
 - `--subset_fraction` lets you train on only a portion of CIFAR-10.
 - Dynamically uses `torch.utils.data.Subset` after applying SimCLR views.
