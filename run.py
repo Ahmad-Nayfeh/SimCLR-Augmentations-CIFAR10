@@ -129,7 +129,7 @@ def main():
 
     # Define CSV file path (place it outside the run-specific folder to aggregate results)
     args.loss_csv_path_ = 'simclr_loss_results.csv'
-    loss_csv_headers = ['run_id', 'timestamp', 'augmentation_config', 'backbone', 'epoch', 'loss', 'epoch_time_seconds']
+    loss_csv_headers = ['run_id', 'timestamp', 'augmentation_config', 'backbone', 'subset_fraction', 'epoch', 'loss', 'epoch_time_seconds']
     init_csv(args.loss_csv_path_, loss_csv_headers)
     logging.info(f"Logging SimCLR loss results to: {args.loss_csv_path_}")
     # --- /Setup Logging ---

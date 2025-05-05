@@ -171,6 +171,7 @@ class SimCLR(object):
                 'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 'augmentation_config': self.augmentation_config,
                 'backbone': self.args.arch,
+                'subset_fraction': self.args.subset_fraction,
                 'epoch': epoch_counter,
                 'loss': f"{avg_epoch_loss:.6f}", # Format loss for consistency
                 'epoch_time_seconds': f"{epoch_duration:.2f}" # Format time

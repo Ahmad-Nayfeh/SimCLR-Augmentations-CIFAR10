@@ -1,151 +1,151 @@
-# 🔬 SimCLR (Modified for Augmentation Studies on CIFAR-10)
+# 🔬 SimCLR (Enhanced for Augmentation Analysis on CIFAR-10)
 
-This repository is built based on the original SimCLR framework by [sthalles](https://github.com/sthalles/SimCLR), and has been **enhanced** to support:
+This repository builds on the original SimCLR framework by [sthalles](https://github.com/sthalles/SimCLR) and includes extended functionality for:
 
 - Training on **subsets of CIFAR-10** (e.g., 25%, 50%)
-- Flexible control over **data augmentations** via command-line
-- Built-in **Linear Evaluation** (Top-1 / Top-5 Accuracy)
-- Centralized **CSV Logging** of loss and accuracy for easy analysis
-- Automatic **run ID tracking** and **organized logs** per experiment
+- Fine-grained control over **data augmentations**
+- Built-in **linear evaluation** (Top-1 / Top-5 accuracy)
+- Centralized CSV logging for loss and accuracy
+- Visual tools for inspecting augmentations
+- Comparative analysis plots for different experimental setups
 
 ---
-## 📁 Repository Overview
+## 📁 Repository Structure
 
 ```
 
 SimCLR/  
-├── run.py # Main script: pre-training + linear evaluation  
-├── simclr.py # SimCLR training pipeline (with logging)  
-├── evaluation.py # Linear probing evaluation script  
-├── utils.py # Logging helpers (CSV, config)  
-├── data_aug/  
-│ └── contrastive_learning_dataset.py # Augmentation & dataset logic  
+├── run.py # Main training + linear evaluation script  
+├── run_all_py.py # Run predefined experiment sets automatically  
+├── analyze_results.py # Analyze CSV results and generate plots  
+├── visualize_augs_cifar10.py # Visualize CIFAR-10 augmentations  
+├── visualize_augs_stl10.py # Visualize STL-10 augmentations  
+├── simclr.py # Core SimCLR pipeline logic  
+├── evaluation.py # Linear probing implementation  
+├── utils.py # Logging helpers (CSV, config, etc.)  
 ├── models/  
-│ └── resnet_simclr.py  
-├── runs/ # Auto-created. Logs, checkpoints per run  
-├── simclr_loss_results.csv # Global CSV logging SimCLR loss (auto-appended)  
-├── linear_probing_accuracy_results.csv # Global CSV logging final eval accuracy  
+│ └── resnet_simclr.py # ResNet backbone  
+├── data_aug/  
+│ └── contrastive_learning_dataset.py # Dataset + augmentation wrapper  
+├── runs/ # Auto-generated logs and checkpoints per run  
+├── analysis_plots/ # Stores generated result plots  
+├── simclr_loss_results.csv # Logs SimCLR training loss across runs  
+├── linear_probing_accuracy_results.csv # Logs final evaluation results  
 ├── requirements.txt  
-├── README.md # ← You are here
+├── README.md
 
-````
-
----
-## ⚙️ Key Modifications from Original SimCLR
-
-### ✅ Dataset Subsetting
-- `--subset_fraction` lets you train on only a portion of CIFAR-10.
-- Dynamically uses `torch.utils.data.Subset` after applying SimCLR views.
-
-### ✅ Augmentation Flexibility
-- Augmentations are configurable via the `--augmentations` flag:
-  - `jitter`, `blur`, `gray`, `rotate`, `solarize`, `erase`
-- All augmentations are built on top of a **baseline**:
-  - `RandomCrop(32, padding=4)` + `RandomHorizontalFlip(p=0.5)`
-
-### ✅ Augmentation Pipeline is Modular
-- You can choose:
-  - `--augmentations baseline`
-  - `--augmentations blur,jitter`
-  - `--augmentations all` (to apply all 6 variants)
-
-### ✅ Logging Enhancements
-- Every run gets a unique `run_id` and folder inside `runs/`
-- Logs include:
-  - `config.yml`, `training.log`, TensorBoard summaries
-  - Final `checkpoint_*.pth.tar`
-
-### ✅ CSV Logs for Comparison
-- `simclr_loss_results.csv`: Logs epoch-wise loss, time, augmentations, backbone
-- `linear_probing_accuracy_results.csv`: Logs Top-1 / Top-5 accuracy, timings, config
-
-### ✅ Integrated Linear Evaluation
-- No need to run a separate notebook
-- By default, `run.py` will:
-  - Train SimCLR
-  - Load frozen encoder
-  - Train + test linear classifier
-  - Log results
-
----
-## 🚀 How to Use
-
-### ✅ 1. Setup
-```bash
-pip install -r requirements.txt
-````
-
-_Make sure PyTorch + torchvision are installed correctly._
-
----
-### ✅ 2. Run Your First Experiment
-
-Example:
-
-```bash
-python run.py --arch resnet18 --augmentations baseline --subset_fraction 0.25 --epochs 50 --batch-size 128
 ```
 
 ---
-## 🔧 CLI Arguments Overview
+## ⚙️ Main Features
 
-|Category|Flag|Description|
-|---|---|---|
-|**Dataset**|`--dataset-name`|`cifar10` or `stl10` (default: `cifar10`)|
-||`--subset_fraction`|Fraction of dataset to use (e.g., `0.25`)|
-||`-data`|Path to dataset root (default: `./datasets`)|
-|**Augmentations**|`--augmentations`|Comma-separated list: `jitter,blur,gray,rotate,solarize,erase`|
-|||Special: `baseline`, `all`|
-|**Model**|`--arch`|`resnet18` or `resnet50`|
-||`--out_dim`|Output dim of projection head (default: 128)|
-|**Training**|`--epochs`|Number of training epochs (default: 50)|
-||`--batch-size`|Batch size (default: 128)|
-||`--learning-rate` or `--lr`|Initial LR for Adam (default: 0.0003)|
-||`--weight-decay` or `--wd`|Weight decay (default: 1e-4)|
-||`--temperature`|NT-Xent temperature (default: 0.07)|
-||`--fp16-precision`|Use mixed precision training|
-|**Evaluation**|`--run_linear_eval`|Enable evaluation (default: True)|
-||`--no_linear_eval`|Disable evaluation|
-|**Misc**|`--workers` or `-j`|DataLoader workers (default: 4)|
-||`--seed`|Seed for reproducibility|
-||`--disable-cuda`|Force CPU mode|
-||`--gpu-index`|Which GPU to use (default: 0)|
-||`--log-every-n-steps`|Logging frequency (default: 100)|
+### 🔹 Dataset Subsetting
+- Use `--subset_fraction` to train on a specific portion of CIFAR-10
+- Built using `torch.utils.data.Subset`
+
+### 🔹 Modular Augmentation Pipeline
+- Augmentations can be selected via the `--augmentations` flag:
+  - Options: `jitter`, `blur`, `gray`, `rotate`, `solarize`, `erase`
+- Augmentations apply on top of a **baseline**:
+  - `RandomCrop(32, padding=4)` + `RandomHorizontalFlip(p=0.5)`
+- Examples:
+  ```bash
+  --augmentations baseline
+  --augmentations blur,jitter
+  --augmentations all
+```
+
+### 🔹 Logging and Evaluation
+
+- Each run has a unique `run_id` with logs in `runs/<run_id>/`
+- Stores `config.yml`, `training.log`, checkpoint, and TensorBoard
+- Results logged in:
+    - `simclr_loss_results.csv` — Epoch-wise training loss
+    - `linear_probing_accuracy_results.csv` — Final accuracy, timing, etc.
 
 ---
-## 🧪 Examples
 
-### 🔹 Run ResNet-18 with Baseline + Blur + Jitter on 25% of CIFAR-10:
+## 🖼️ Data Augmentation (CIFAR-10 Visualization)
+
+| Original                                       | Augmentations                                     |
+| ---------------------------------------------- | ------------------------------------------------- |
+| ![CIFAR Original](CIFAR-10 Original Image.png) | ![CIFAR Augs](CIFAR-10 Augmentations Applied.png) |
+
+_Visualized using `visualize_augs_cifar10.py`_
+
+---
+## 📊 Experimental Results
+
+Experiments are grouped into two sets:
+- **Experiment 1**: Compare different augmentations (fixed 25% subset)
+- **Experiment 2**: Compare subset sizes using `all` augmentations
+
+### 🔹 Experiment 1: Augmentations @ 25% Subset
+
+| Accuracy Comparison                                      | Pre-training Time                                             | Loss Curve                                                  |
+| -------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------- |
+| ![Plot 1](analysis_plots/1_accuracy_vs_augmentation.png) | ![Plot 2](analysis_plots/1_pretrain_time_vs_augmentation.png) | ![Plot 3](analysis_plots/1_loss_curves_vs_augmentation.png) |
+
+
+### 🔹 Experiment 2: Subset Size Comparison (with `all` augmentations)
+
+| Accuracy vs Subset                                          | Time vs Subset                                                   | Loss Curve                                                     |
+| ----------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------- |
+| ![Plot 4](analysis_plots/2_accuracy_vs_subset_fraction.png) | ![Plot 5](analysis_plots/2_pretrain_time_vs_subset_fraction.png) | ![Plot 6](analysis_plots/2_loss_curves_vs_subset_fraction.png) |
+
+_Generated using `analyze_results.py`_
+
+---
+## 🚀 Getting Started
+
+### ✅ Install Requirements
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+### ✅ Example Command
 
 ```bash
 python run.py --arch resnet18 --augmentations blur,jitter --subset_fraction 0.25 --epochs 50
 ```
 
-### 🔹 Run ResNet-50 with All Augmentations on Full CIFAR-10:
+Or run the full experiment suite:
 
 ```bash
-python run.py --arch resnet50 --augmentations all --subset_fraction 1.0 --epochs 50
-```
-
-### 🔹 Skip evaluation (only pre-train):
-
-```bash
-python run.py --arch resnet18 --augmentations rotate,solarize --no_linear_eval
+python run_all_py.py
 ```
 
 ---
-## 📊 Outputs
+## 🧪 CLI Argument Overview
 
-- **`runs/<run_id>/`** — Logs, config, TensorBoard, model checkpoint
-- **`simclr_loss_results.csv`** — Aggregated SimCLR loss across runs
-- **`linear_probing_accuracy_results.csv`** — Final accuracy for each run
-- **Console Logs** — Shows all training + eval progress with `tqdm` and `logging`
+|Category|Flag|Description|
+|---|---|---|
+|Dataset|`--dataset-name`|`cifar10` or `stl10`|
+||`--subset_fraction`|Portion of data to use (e.g., 0.25)|
+|Augmentations|`--augmentations`|List like `blur,jitter,erase`, or `all`|
+|Model|`--arch`|`resnet18` or `resnet50`|
+|Training|`--epochs`|Number of pretrain epochs|
+||`--batch-size`|Batch size|
+||`--learning-rate` / `--lr`|Initial LR|
+||`--fp16-precision`|Enable mixed precision|
+|Evaluation|`--run_linear_eval` / `--no_linear_eval`|Enable/disable linear eval|
+|Misc|`--gpu-index`, `--log-every-n-steps`, `--seed`, `--disable-cuda`|Misc settings|
+
+---
+## 📦 Outputs
+
+- `runs/<run_id>/` — All run logs and model artifacts
+- `simclr_loss_results.csv` — Logs SimCLR loss (all runs)
+- `linear_probing_accuracy_results.csv` — Logs Top-1 / Top-5 accuracy
+- `analysis_plots/` — Final visualizations for result comparison
 
 ---
 ## 🤝 Credits
 
-Built on top of:
+Originally based on:
 
 - [sthalles/SimCLR](https://github.com/sthalles/SimCLR)
 
-Extended and maintained by **Ahmad Nayfeh** for research on augmentation effects in SSL for **Digital Image Processing @ KFUPM**.
+Maintained by **Ahmad Nayfeh** for research on augmentation effects in self-supervised learning — EE-663 (Digital Image Processing), KFUPM.

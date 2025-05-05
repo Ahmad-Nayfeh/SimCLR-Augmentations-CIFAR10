@@ -86,7 +86,7 @@ def load_backbone(checkpoint_path, device):
     return model, arch
 
 
-def train_linear_classifier(model, train_loader, test_loader, device, epochs=100, lr=3e-4, weight_decay=0.0):
+def train_linear_classifier(model, train_loader, test_loader, device, epochs=50, lr=3e-4, weight_decay=0.0):
     """Trains the linear classifier on top of the frozen backbone."""
     eval_start_time = time.time()
 
@@ -171,7 +171,7 @@ def run_evaluation(args, checkpoint_path):
     accuracy_csv_path = 'linear_probing_accuracy_results.csv' # Central CSV file
     accuracy_csv_headers = [
         'run_id', 'timestamp', 'augmentation_config', 'backbone',
-        'top1_accuracy', 'top5_accuracy',
+        'subset_fraction', 'top1_accuracy', 'top5_accuracy',
         'total_pretrain_time_seconds', 'eval_time_seconds'
     ]
     init_csv(accuracy_csv_path, accuracy_csv_headers)
@@ -198,7 +198,7 @@ def run_evaluation(args, checkpoint_path):
     try:
         top1_acc, top5_acc, eval_time_sec = train_linear_classifier(
             model, eval_train_loader, eval_test_loader, device,
-            epochs=100 # Standard 100 epochs for linear eval
+            epochs=50 # Standard 100 epochs for linear eval
         )
     except Exception as e:
         print(f"Error during linear classifier training: {e}. Skipping logging.")
@@ -212,6 +212,7 @@ def run_evaluation(args, checkpoint_path):
         'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'augmentation_config': args.augmentation_config_string_,
         'backbone': backbone_arch,
+        'subset_fraction': args.subset_fraction,
         'top1_accuracy': f"{top1_acc:.2f}",
         'top5_accuracy': f"{top5_acc:.2f}",
         'total_pretrain_time_seconds': f"{args.total_train_time_seconds_:.2f}",

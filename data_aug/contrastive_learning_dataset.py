@@ -26,58 +26,52 @@ class ContrastiveLearningDataset:
         Returns:
             torchvision.transforms.Compose: Composition of transformations.
         """
-        # --- Baseline Augmentations ---
-        # Replace RandomResizedCrop with RandomCrop for CIFAR-10
-        augmentation_list = [
-            transforms.RandomCrop(size, padding=4), # CIFAR-10 is 32x32
+        # --- Augmentations operating on PIL Images ---
+        pil_augmentations = [
+            transforms.RandomCrop(size, padding=4),
             transforms.RandomHorizontalFlip(p=0.5),
         ]
 
-        # --- Variant Augmentations ---
-        s = 1.0 # Strength parameter, kept from original code for jitter reference
+        s = 1.0 # Strength parameter reference
 
-        # 1. Color Jitter
         if 'jitter' in active_augmentations:
-            color_jitter = transforms.ColorJitter(brightness=0.8 * s, contrast=0.8 * s, saturation=0.8 * s, hue=0.2 * s)
-            augmentation_list.append(transforms.RandomApply([color_jitter], p=0.8))
+            color_jitter = transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1) # Adjusted params based on user doc
+            pil_augmentations.append(transforms.RandomApply([color_jitter], p=0.8))
 
-        # 2. Grayscale
         if 'gray' in active_augmentations:
-            # RandomGrayscale already has probability p
-            augmentation_list.append(transforms.RandomGrayscale(p=0.2))
+            pil_augmentations.append(transforms.RandomGrayscale(p=0.2))
 
-        # 3. Gaussian Blur
         if 'blur' in active_augmentations:
-            # Original code applied blur always. We need RandomApply for p=0.5
-            # kernel_size is calculated based on image size (e.g., 3 for 32x32)
             kernel_size = int(0.1 * size)
-            if kernel_size % 2 == 0: # Ensure kernel size is odd
-                 kernel_size += 1
-            gaussian_blur = GaussianBlur(kernel_size=kernel_size) # sigma is random [0.1, 2.0] within this class
-            augmentation_list.append(transforms.RandomApply([gaussian_blur], p=0.5))
+            if kernel_size % 2 == 0: kernel_size += 1
+            # Note: GaussianBlur class internally handles PIL->Tensor->PIL conversion
+            gaussian_blur = GaussianBlur(kernel_size=kernel_size) 
+            pil_augmentations.append(transforms.RandomApply([gaussian_blur], p=0.5))
 
-        # 4. Random Rotation
         if 'rotate' in active_augmentations:
-            # Assuming 30 degrees max rotation, apply with p=0.5
-            augmentation_list.append(transforms.RandomApply([transforms.RandomRotation(30)], p=0.5))
+            pil_augmentations.append(transforms.RandomApply([transforms.RandomRotation(30)], p=0.5))
 
-        # 5. Random Solarize
         if 'solarize' in active_augmentations:
-            # Assuming threshold 128, apply with p=0.2
-            augmentation_list.append(transforms.RandomSolarize(128, p=0.2))
+             # Note: RandomSolarize takes PIL and returns PIL
+            pil_augmentations.append(transforms.RandomSolarize(128, p=0.2))
 
-        # 6. Random Erasing
+        # --- Conversion to Tensor ---
+        tensor_conversion = [transforms.ToTensor()]
+
+        # --- Augmentations operating on Tensors ---
+        tensor_augmentations = []
         if 'erase' in active_augmentations:
-             # Using torchvision defaults for scale/ratio, apply with p=0.5
-             augmentation_list.append(transforms.RandomErasing(p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0, inplace=False))
+             # RandomErasing operates on Tensors
+             tensor_augmentations.append(transforms.RandomErasing(p=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0, inplace=False))
+        
+        # --- Combine all transforms ---
+        # Apply PIL augmentations, then convert to tensor, then apply tensor augmentations
+        full_augmentation_list = pil_augmentations + tensor_conversion + tensor_augmentations
+        data_transforms = transforms.Compose(full_augmentation_list)
 
-
-        # --- Finalization ---
-        augmentation_list.append(transforms.ToTensor())
-
-        data_transforms = transforms.Compose(augmentation_list)
-        print(f"Applied Augmentations: {augmentation_list}") # For verification
+        print(f"Applied Augmentations (reordered): {full_augmentation_list}") # For verification
         return data_transforms
+    
 
     def get_dataset(self, name, n_views, subset_fraction=1.0, active_augmentations=[]):
         """
