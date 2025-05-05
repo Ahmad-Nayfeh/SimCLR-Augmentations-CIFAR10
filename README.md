@@ -69,7 +69,7 @@ SimCLR/
 
 | Original                                       | Augmentations                                     |
 | ---------------------------------------------- | ------------------------------------------------- |
-| ![CIFAR Original](CIFAR-10 Original Image.png) | ![CIFAR Augs](CIFAR-10 Augmentations Applied.png) |
+| ![CIFAR Original](/CIFAR-10 Original Image.png) | ![CIFAR Augs](/CIFAR-10 Augmentations Applied.png) |
 
 _Visualized using `visualize_augs_cifar10.py`_
 
