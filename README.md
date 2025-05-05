@@ -53,7 +53,7 @@ SimCLR/
   --augmentations baseline
   --augmentations blur,jitter
   --augmentations all
-```
+
 
 ### 🔹 Logging and Evaluation
 
